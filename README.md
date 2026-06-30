@@ -1,183 +1,202 @@
-[Instagram Posts Scraper](https://apify.com/vulnv/instagram-posts-scraper?fpr=data)
+[Instagram Posts Scraper](https://apify.com/khadinakbar/instagram-posts-scraper?fpr=data)
 
-## Overview
+# 🔥 Instagram Posts Scraper – Profiles, Hashtags & URLs
 
-The **Instagram Posts Scraper** is an Apify Actor that extracts detailed data from **Instagram posts** at scale. Perfect for content creators, social media marketers, influencer researchers, and brand analysts — with **no Instagram login, cookies, or browser automation required**.
-
-✅ No Instagram login required | ✅ Bulk post processing | ✅ Structured JSON output | ✅ High success rate
+> Extract Instagram posts from any combination of profiles, hashtags, and direct post URLs — all in one actor. No login required. Returns captions, engagement metrics, media URLs, location, tagged users, and more.
 
 ---
 
-### **Complete Post Data**
+## What does Instagram Posts Scraper do?
 
-- **Media Information** — Photos, videos, thumbnail, carousel content (post_content), alt text, shortcode
-- **Engagement Metrics** — Likes, comments count
-- **Content Details** — Description/caption, hashtags, content type (Image/Video/Carousel)
-- **Creator Details** — Username, user ID, profile image, follower count, posts count, verified status, profile URL
-- **Partnership Info** — Paid partnership status and details
-- **Metadata** — Post date, post ID, content ID, audio, video duration, timestamp
+Instagram Posts Scraper is a powerful, multi-input actor that extracts structured post data from Instagram's public pages. Unlike other scrapers that force you to use separate tools for profiles vs. hashtags, this actor handles all three input types in a single run: **usernames**, **hashtags**, and **direct post URLs**.
 
-### **Key Features**
-
-- **No Authentication Required** — Works without Instagram cookies or login
-- **Bulk Processing** — Handle multiple post URLs in one run
-- **Clean JSON Output** — Structured, ready-to-use data format
-- **Real-time Processing** — Monitor extraction progress
-- **High Reliability** — Built-in retry mechanisms and error handling
+Feed it a mix of inputs and get back clean, structured JSON with everything you need — captions, hashtags, engagement metrics, media URLs, location tags, co-authors, tagged users, and optional recent comments.
 
 ---
 
-## 🧾 Input Configuration
+## Why use Instagram Posts Scraper?
 
-Submit an array of Instagram Post URLs via Apify's input:
+- **All-in-one input** — scrape profile posts, hashtag feeds, and specific post URLs in one run
+- **Rich data output** — 30+ fields including accessibility captions, co-authors, tagged users, and pinned/sponsored flags that basic scrapers miss
+- **Date filtering** — skip posts older than a specified date without wasting credit
+- **No login required** — works entirely on public Instagram data
+- **MCP & AI ready** — semantic field names and rich schema for seamless integration with Claude, ChatGPT, and other AI workflows
+- **Competitive pricing** — $0.0012/post on free tier, down to $0.0003 at Diamond
+
+---
+
+## What data can Instagram Posts Scraper extract?
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | string | Instagram internal post ID |
+| `shortcode` | string | Shortcode used in the post URL |
+| `url` | string | Direct link to the post |
+| `post_type` | string | IMAGE, VIDEO, CAROUSEL_ALBUM, or REEL |
+| `caption` | string | Full caption text |
+| `hashtags` | array | Extracted hashtags (no # symbol) |
+| `mentions` | array | Extracted @mentions |
+| `accessibility_caption` | string | AI-generated image alt text |
+| `like_count` | integer | Number of likes |
+| `comment_count` | integer | Number of comments |
+| `video_view_count` | integer | Views (videos/reels only) |
+| `video_play_count` | integer | Plays (videos/reels only) |
+| `video_duration` | number | Duration in seconds |
+| `thumbnail_url` | string | Main post thumbnail |
+| `display_url` | string | Full resolution image URL |
+| `media_urls` | array | All images in a carousel |
+| `video_url` | string | Direct video file URL |
+| `owner_username` | string | Post author's username |
+| `owner_full_name` | string | Post author's display name |
+| `owner_is_verified` | boolean | Verified badge status |
+| `owner_follower_count` | integer | Author's follower count |
+| `location_name` | string | Tagged location |
+| `location_id` | string | Instagram location ID |
+| `tagged_users` | array | Users tagged in the post |
+| `coauthors` | array | Collaboration co-author usernames |
+| `is_pinned` | boolean | Whether the post is pinned |
+| `is_sponsored` | boolean | Paid partnership flag |
+| `is_reel` | boolean | Whether it's a Reel |
+| `comments_disabled` | boolean | Whether comments are off |
+| `timestamp` | string | Post publish date (ISO 8601) |
+| `scraped_at` | string | Scrape timestamp (ISO 8601) |
+| `recent_comments` | array | Up to 5 recent comments with text, username, timestamp, likes |
+
+---
+
+## How to use Instagram Posts Scraper
+
+### Step 1 — Choose your input type
+
+You can mix and match all three input types in a single run:
+
+**By username (profile posts):**
 
 ```
-{
-  "urls": [
-    "https://www.instagram.com/p/Cuf4s0MNqNr",
-    "https://www.instagram.com/p/DP861NijuwE"
-  ]
-}
+natgeo
+nasa
+https://www.instagram.com/natgeo/
+```
+
+**By hashtag:**
+
+```
+travel
+#photography
+nature
+```
+
+**By direct post URL:**
+
+```
+https://www.instagram.com/p/CxABCde1234/
+https://www.instagram.com/reel/CxABCde5678/
+```
+
+### Step 2 — Set your limits
+
+- **Max Posts Per Target** — How many posts to fetch per profile or hashtag (default: 50, max: 500)
+- **Only Posts Newer Than** — Skip old posts. Accepts `YYYY-MM-DD` or relative values like `7 days`, `2 months`, `1 year`
+
+### Step 3 — Run and export
+
+Click **Start** and your data will appear in the **Output** tab. Export as JSON, CSV, or Excel.
+
+### API usage example
+
+```
+const { ApifyClient } = require('apify-client');
+
+const client = new ApifyClient({ token: 'YOUR_API_TOKEN' });
+
+const run = await client.actor('khadinakbar/instagram-posts-scraper').call({
+    instagramUsernames: ['natgeo', 'nasa'],
+    hashtags: ['photography'],
+    maxPostsPerTarget: 100,
+    onlyPostsNewerThan: '30 days',
+    includeRecentComments: true,
+});
+
+const { items } = await client.dataset(run.defaultDatasetId).listItems();
+console.log(`Scraped ${items.length} posts`);
 ```
 
 ---
 
-## 📤 Output Format
+## Pricing
 
-Each post will return detailed data such as:
+This actor uses **Pay Per Event** pricing — you only pay for posts that are successfully scraped.
 
-```
-{
-  "url": "https://www.instagram.com/p/DP861NijuwE",
-  "user_posted": "amyclaireboutique",
-  "description": "✨ The ultimate outfit finisher! A scarf instantly elevates any look. 🌸\nBecause when in doubt… just add a scarf. 💕\n\n🛍️ Shop at @amyclaireboutique link in bio!\n#amyclaireboutique #stylemadeeasy #scarfstyle #boutiqueaccessories #fallfashion",
-  "hashtags": [
-    "#amyclaireboutique",
-    "#stylemadeeasy",
-    "#scarfstyle",
-    "#boutiqueaccessories",
-    "#fallfashion"
-  ],
-  "num_comments": 0,
-  "date_posted": "2025-10-18T13:14:07.000Z",
-  "likes": 7,
-  "photos": ["https://scontent.cdninstagram.com/..."],
-  "post_id": "3746127733433756676",
-  "shortcode": "DP861NijuwE",
-  "content_type": "Image",
-  "pk": "3746127733433756676",
-  "content_id": "DP861NijuwE",
-  "thumbnail": "https://scontent.cdninstagram.com/...",
-  "followers": 321,
-  "posts_count": 105,
-  "profile_image_link": "https://scontent.cdninstagram.com/...",
-  "is_verified": false,
-  "is_paid_partnership": false,
-  "partnership_details": null,
-  "user_posted_id": "77561612778",
-  "post_content": [
-    {
-      "index": 0,
-      "type": "Photo",
-      "url": "https://scontent.cdninstagram.com/...",
-      "id": "3746127733433756676",
-      "alt_text": "Photo by Amy Claire Boutique on October 18, 2025."
-    }
-  ],
-  "audio": null,
-  "profile_url": "https://www.instagram.com/amyclaireboutique",
-  "videos_duration": null,
-  "images": [],
-  "alt_text": "Photo by Amy Claire Boutique on October 18, 2025.",
-  "photos_number": 0,
-  "timestamp": "2026-02-22T19:47:07.423Z",
-  "input": {
-    "url": "https://www.instagram.com/p/DP861NijuwE"
-  }
-}
-```
-
-> **Note:** The exact output fields depend on the data available for each post. Some fields like `audio` or `videos_duration` may be `null` for image-only posts. Long CDN URLs are truncated above for readability.
-
----
-
-## 📊 Output & Export
-
-### **Dataset Storage**
-
-- All extracted data is stored in your Apify dataset
-- Each post becomes one dataset item
-- Failed extractions are logged with error details
-
-### **Export Formats**
-
-- **JSON** — Raw structured data for API integration
-- **CSV** — Spreadsheet-compatible format
-- **Excel** — Formatted spreadsheet with multiple sheets
-
----
-
-## 💼 Common Use Cases
-
-### **Content Strategy & Trend Analysis**
-
-- Analyze trending post formats, hashtags, and content types
-- Study viral content patterns and engagement drivers
-- Research optimal posting times and caption strategies
-
-### **Influencer Marketing & Research**
-
-- Evaluate influencer post performance and engagement rates
-- Compare content quality across potential brand ambassadors
-- Track sponsored post metrics and ROI
-
-### **Competitive Analysis**
-
-- Monitor competitor post strategies and performance
-- Benchmark engagement metrics against industry standards
-- Identify successful content themes in your niche
-
-### **Brand Monitoring**
-
-- Track brand mentions and tagged posts
-- Analyze user-generated content and sentiment
-- Monitor campaign hashtag performance
-
-### **Academic & Market Research**
-
-- Study social media content trends at scale
-- Analyze visual content engagement patterns
-- Research platform-specific content performance
-
----
-
-## ✅ Example Use
-
-```
-{
-  "urls": [
-    "https://www.instagram.com/p/Cuf4s0MNqNr",
-    "https://www.instagram.com/p/DP861NijuwE"
-  ]
-}
-```
-
-After execution, the dataset will contain detailed data for each Instagram post including media URLs, engagement metrics, creator information, comments, and more.
-
-## 🔗 Related Scrapers
-
-Check out these other scrapers from [Vulnv on Apify](https://apify.com/vulnv):
-
-| Scraper | Description |
+| Plan | Price Per Post |
 | --- | --- |
-| [Instagram Profile Scraper](https://apify.com/vulnv/instagram-profile-scraper) | Extract profile data, follower counts, bio, posts, and engagement metrics from public Instagram profiles |
-| [Instagram Reels Scraper](https://apify.com/vulnv/instagram-reels-scraper) | Extract video data, engagement metrics, and audio info from Instagram Reels |
-| [Facebook Profile Scraper](https://apify.com/vulnv/facebook-profile-scraper) | Scrape public Facebook profile information and post data |
-| [TikTok Scraper](https://apify.com/vulnv/tiktok-scraper) | Extract video data, engagement metrics, and creator info from TikTok |
-| [LinkedIn Profile Scraper](https://apify.com/vulnv/linkedin-profile-scraper) | Scrape public LinkedIn profile data without login |
-| [LinkedIn Posts Scraper](https://apify.com/vulnv/linkedin-posts-scraper) | Extract LinkedIn post content, engagement metrics, and comments |
-| [Reddit Posts Scraper](https://apify.com/vulnv/reddit-posts-scraper) | Collect Reddit posts and comments from any subreddit |
+| Free | $0.0012 |
+| Bronze | $0.0010 |
+| Silver | $0.0009 |
+| Gold | $0.0007 |
+| Platinum | $0.0005 |
+| Diamond | $0.0003 |
 
-🔍 Explore the full collection at 🌐 [Vulnv's Apify Actors](https://apify.com/vulnv)
+**Example cost:** Scraping 1,000 posts on a free plan = **$1.20**
 
-📧 For support or collaborations, reach out at [apify@vulnv.com](mailto:apify@vulnv.com).
+There is also a small actor start fee of $0.00005 per run.
+
+---
+
+## Use cases
+
+**Social media analytics** — Track posting frequency, engagement trends, and content format performance across competitor profiles.
+
+**Influencer research** — Identify high-performing creators in a niche by scraping hashtag posts and sorting by engagement rate.
+
+**Brand monitoring** — Monitor @mentions and brand hashtags to discover user-generated content and brand conversations.
+
+**Content strategy** — Analyze which post types (image, reel, carousel) get the most engagement in your niche.
+
+**Market research** — Scrape posts from industry accounts and hashtags to identify trends and content gaps.
+
+**Lead generation** — Extract public contact info and profile data from business accounts in your target market.
+
+**AI training data** — Collect captioned images with accessibility_caption fields for computer vision and NLP model training.
+
+**Competitive intelligence** — Monitor competitor brands' posting schedules, hashtag strategies, and engagement patterns.
+
+---
+
+## Frequently asked questions
+
+**Does it require Instagram login?**
+No. This scraper only collects publicly available data from Instagram's public pages. No login credentials are required.
+
+**Why do some posts have null values?**
+Instagram doesn't always return every field for every post, especially video view counts for older content. Missing values are returned as `null` rather than empty strings.
+
+**Can I scrape private accounts?**
+No. Only public Instagram profiles and posts are accessible without login.
+
+**What proxies does it use?**
+The actor uses Apify's residential proxy pool by default, which is recommended for Instagram. Datacenter proxies are frequently blocked by Instagram's bot detection.
+
+**Can I schedule automatic runs?**
+Yes — use Apify Scheduler to run the actor on any schedule (daily, weekly, etc.) and save your results to a dataset for trend analysis.
+
+**Why am I getting fewer posts than expected?**
+Instagram limits how many posts are visible on public pages without authentication. The practical limit is typically 50-200 posts per profile scroll. For comprehensive historical data, consider multiple scheduled runs.
+
+**Does it work with Instagram Reels?**
+Yes. Reels are returned with `post_type: "REEL"` and `is_reel: true`, including view counts and video duration.
+
+---
+
+## Other actors you might find useful
+
+- [Instagram Hashtag Scraper](https://apify.com/apify/instagram-hashtag-scraper) — Dedicated hashtag scraper from Apify
+- [Instagram Profile Scraper](https://apify.com/apify/instagram-profile-scraper) — Scrape profile-level info (bio, followers, following)
+- [Instagram Comments Scraper](https://apify.com/apify/instagram-comment-scraper) — Deep comment extraction for sentiment analysis
+
+---
+
+## Legal disclaimer
+
+This actor is designed for collecting publicly available data from Instagram in compliance with applicable laws. Users are solely responsible for ensuring their use complies with Instagram's Terms of Service, applicable privacy laws (including GDPR and CCPA), and any other relevant regulations. The actor author does not endorse or encourage any use that violates these terms. Data collected should not be used to harass, spam, or target individuals without their consent.
+
+Export scraped data, run the scraper via API, schedule and monitor runs, or integrate with other tools and AI workflows.
