@@ -1,127 +1,183 @@
-[Instagram Posts Scraper](https://apify.com/goat255/instagram-posts-scraper?fpr=data)
+[Instagram Posts Scraper](https://apify.com/vulnv/instagram-posts-scraper?fpr=data)
 
-# Instagram Posts Scraper
+## Overview
 
-Scrape Instagram posts in bulk with full captions, engagement metrics, media URLs, locations, tagged users, and carousel data. Handles pagination automatically.
+The **Instagram Posts Scraper** is an Apify Actor that extracts detailed data from **Instagram posts** at scale. Perfect for content creators, social media marketers, influencer researchers, and brand analysts — with **no Instagram login, cookies, or browser automation required**.
 
-## What it does
+✅ No Instagram login required | ✅ Bulk post processing | ✅ Structured JSON output | ✅ High success rate
 
-- Scrapes **post data** — captions, like/comment counts, video views, media URLs, timestamps
-- Extracts **media details** — images, videos, carousels with all child slides
-- Captures **metadata** — locations, tagged users, coauthors, paid partnership flags
-- Accepts **usernames, @handles, or full Instagram URLs** — mix and match any format
-- Handles **pagination** automatically — set how many posts you want and it fetches across as many pages as needed
-- Runs **multiple usernames in parallel** with configurable concurrency
-- Uses **multiple independent sources** with automatic failover
-- Returns **one flat JSON object per post** — each post includes a `username` field so you can easily group and filter results by account
+---
 
-## Output
+### **Complete Post Data**
 
-Each result is one JSON object per post. Every post includes the `username` field, so when scraping multiple accounts you can **group results by username** to see each account's posts separately.
+- **Media Information** — Photos, videos, thumbnail, carousel content (post_content), alt text, shortcode
+- **Engagement Metrics** — Likes, comments count
+- **Content Details** — Description/caption, hashtags, content type (Image/Video/Carousel)
+- **Creator Details** — Username, user ID, profile image, follower count, posts count, verified status, profile URL
+- **Partnership Info** — Paid partnership status and details
+- **Metadata** — Post date, post ID, content ID, audio, video duration, timestamp
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `username` | string | Username this post belongs to — use this to group posts by account |
-| `id` | string | Post ID |
-| `shortcode` | string | URL slug (`instagram.com/p/{shortcode}`) |
-| `mediaType` | string | `"image"`, `"video"`, or `"carousel"` |
-| `timestamp` | integer | When posted (unix timestamp) |
-| `caption` | string | Full caption text |
-| `displayUrl` | string | Main image URL |
-| `thumbnailUrl` | string | Square thumbnail URL |
-| `videoUrl` | string | Video URL (if video) |
-| `dimensions` | object | `{"height": 1080, "width": 1080}` |
-| `accessibilityCaption` | string | Alt text |
-| `likeCount` | integer | Number of likes |
-| `commentCount` | integer | Number of comments |
-| `videoViewCount` | integer | Video views (if video) |
-| `location` | string | Location name |
-| `taggedUsers` | string[] | Tagged usernames |
-| `coauthors` | string[] | Collab post co-authors |
-| `isPaidPartnership` | boolean | Sponsored content flag |
-| `commentsDisabled` | boolean | Comments turned off |
-| `children` | object[] | Carousel slides (each with `id`, `mediaType`, `displayUrl`, `videoUrl`, `dimensions`) |
+### **Key Features**
 
-## Use cases
+- **No Authentication Required** — Works without Instagram cookies or login
+- **Bulk Processing** — Handle multiple post URLs in one run
+- **Clean JSON Output** — Structured, ready-to-use data format
+- **Real-time Processing** — Monitor extraction progress
+- **High Reliability** — Built-in retry mechanisms and error handling
 
-- **Content analysis** — analyze captions, hashtags, and posting patterns at scale
-- **Engagement tracking** — monitor likes, comments, and video views across accounts
-- **Competitor monitoring** — track what competitors post, how often, and engagement rates
-- **Influencer analytics** — evaluate content performance for influencer vetting
-- **Brand monitoring** — find posts mentioning your brand via tagged users and coauthors
+---
 
-## Integrations
+## 🧾 Input Configuration
 
-### Apify API
+Submit an array of Instagram Post URLs via Apify's input:
 
 ```
-# Get all posts
-curl "https://api.apify.com/v2/datasets/{DATASET_ID}/items?format=json"
-
-# Filter posts by username using the API
-curl "https://api.apify.com/v2/datasets/{DATASET_ID}/items?format=json&fields=username,shortcode,likeCount,caption"
-```
-
-### Python
-
-```
-from apify_client import ApifyClient
-from itertools import groupby
-from operator import itemgetter
-
-client = ApifyClient("YOUR_API_TOKEN")
-
-run = client.actor("YOUR_ACTOR_ID").call(run_input={
-    "usernames": ["nasa", "spacex"],
-    "maxPostsPerUser": 24,
-})
-
-# Group posts by username
-posts = list(client.dataset(run["defaultDatasetId"]).iterate_items())
-posts.sort(key=itemgetter("username"))
-
-for username, user_posts in groupby(posts, key=itemgetter("username")):
-    user_posts = list(user_posts)
-    avg_likes = sum(p.get("likeCount", 0) or 0 for p in user_posts) / len(user_posts)
-    print(f"@{username}: {len(user_posts)} posts, avg {avg_likes:.0f} likes")
-```
-
-### JavaScript / Node.js
-
-```
-import { ApifyClient } from 'apify-client';
-
-const client = new ApifyClient({ token: 'YOUR_API_TOKEN' });
-
-const run = await client.actor('YOUR_ACTOR_ID').call({
-    usernames: ['nasa', 'spacex'],
-    maxPostsPerUser: 24,
-});
-
-const { items } = await client.dataset(run.defaultDatasetId).listItems();
-
-// Group posts by username
-const grouped = Object.groupBy(items, post => post.username);
-for (const [username, posts] of Object.entries(grouped)) {
-    const avgLikes = posts.reduce((sum, p) => sum + (p.likeCount || 0), 0) / posts.length;
-    console.log(`@${username}: ${posts.length} posts, avg ${Math.round(avgLikes)} likes`);
+{
+  "urls": [
+    "https://www.instagram.com/p/Cuf4s0MNqNr",
+    "https://www.instagram.com/p/DP861NijuwE"
+  ]
 }
 ```
 
-### Webhooks & other platforms
+---
 
-Use [Apify integrations](https://docs.apify.com/platform/integrations) to send results to Google Sheets, Slack, Zapier, Make, Amazon S3, or your own webhook endpoint.
+## 📤 Output Format
 
-## Pricing
+Each post will return detailed data such as:
 
-This actor uses **pay-per-event** pricing. You are charged per post successfully scraped. Check the Pricing tab for current rates.
+```
+{
+  "url": "https://www.instagram.com/p/DP861NijuwE",
+  "user_posted": "amyclaireboutique",
+  "description": "✨ The ultimate outfit finisher! A scarf instantly elevates any look. 🌸\nBecause when in doubt… just add a scarf. 💕\n\n🛍️ Shop at @amyclaireboutique link in bio!\n#amyclaireboutique #stylemadeeasy #scarfstyle #boutiqueaccessories #fallfashion",
+  "hashtags": [
+    "#amyclaireboutique",
+    "#stylemadeeasy",
+    "#scarfstyle",
+    "#boutiqueaccessories",
+    "#fallfashion"
+  ],
+  "num_comments": 0,
+  "date_posted": "2025-10-18T13:14:07.000Z",
+  "likes": 7,
+  "photos": ["https://scontent.cdninstagram.com/..."],
+  "post_id": "3746127733433756676",
+  "shortcode": "DP861NijuwE",
+  "content_type": "Image",
+  "pk": "3746127733433756676",
+  "content_id": "DP861NijuwE",
+  "thumbnail": "https://scontent.cdninstagram.com/...",
+  "followers": 321,
+  "posts_count": 105,
+  "profile_image_link": "https://scontent.cdninstagram.com/...",
+  "is_verified": false,
+  "is_paid_partnership": false,
+  "partnership_details": null,
+  "user_posted_id": "77561612778",
+  "post_content": [
+    {
+      "index": 0,
+      "type": "Photo",
+      "url": "https://scontent.cdninstagram.com/...",
+      "id": "3746127733433756676",
+      "alt_text": "Photo by Amy Claire Boutique on October 18, 2025."
+    }
+  ],
+  "audio": null,
+  "profile_url": "https://www.instagram.com/amyclaireboutique",
+  "videos_duration": null,
+  "images": [],
+  "alt_text": "Photo by Amy Claire Boutique on October 18, 2025.",
+  "photos_number": 0,
+  "timestamp": "2026-02-22T19:47:07.423Z",
+  "input": {
+    "url": "https://www.instagram.com/p/DP861NijuwE"
+  }
+}
+```
 
-## Proxy requirements
+> **Note:** The exact output fields depend on the data available for each post. Some fields like `audio` or `videos_duration` may be `null` for image-only posts. Long CDN URLs are truncated above for readability.
 
-**Residential proxies are required.** Configured by default with Apify's residential proxy pool.
+---
 
-## Limits
+## 📊 Output & Export
 
-- **Private accounts**: Posts are not accessible for private accounts
-- **Post pagination**: Each page returns ~12 posts. Fetching 100 posts requires ~9 pages
-- **Rate limits**: Use `delayBetweenRequests` (default 1s) and reasonable `concurrency` (default 5)
+### **Dataset Storage**
+
+- All extracted data is stored in your Apify dataset
+- Each post becomes one dataset item
+- Failed extractions are logged with error details
+
+### **Export Formats**
+
+- **JSON** — Raw structured data for API integration
+- **CSV** — Spreadsheet-compatible format
+- **Excel** — Formatted spreadsheet with multiple sheets
+
+---
+
+## 💼 Common Use Cases
+
+### **Content Strategy & Trend Analysis**
+
+- Analyze trending post formats, hashtags, and content types
+- Study viral content patterns and engagement drivers
+- Research optimal posting times and caption strategies
+
+### **Influencer Marketing & Research**
+
+- Evaluate influencer post performance and engagement rates
+- Compare content quality across potential brand ambassadors
+- Track sponsored post metrics and ROI
+
+### **Competitive Analysis**
+
+- Monitor competitor post strategies and performance
+- Benchmark engagement metrics against industry standards
+- Identify successful content themes in your niche
+
+### **Brand Monitoring**
+
+- Track brand mentions and tagged posts
+- Analyze user-generated content and sentiment
+- Monitor campaign hashtag performance
+
+### **Academic & Market Research**
+
+- Study social media content trends at scale
+- Analyze visual content engagement patterns
+- Research platform-specific content performance
+
+---
+
+## ✅ Example Use
+
+```
+{
+  "urls": [
+    "https://www.instagram.com/p/Cuf4s0MNqNr",
+    "https://www.instagram.com/p/DP861NijuwE"
+  ]
+}
+```
+
+After execution, the dataset will contain detailed data for each Instagram post including media URLs, engagement metrics, creator information, comments, and more.
+
+## 🔗 Related Scrapers
+
+Check out these other scrapers from [Vulnv on Apify](https://apify.com/vulnv):
+
+| Scraper | Description |
+| --- | --- |
+| [Instagram Profile Scraper](https://apify.com/vulnv/instagram-profile-scraper) | Extract profile data, follower counts, bio, posts, and engagement metrics from public Instagram profiles |
+| [Instagram Reels Scraper](https://apify.com/vulnv/instagram-reels-scraper) | Extract video data, engagement metrics, and audio info from Instagram Reels |
+| [Facebook Profile Scraper](https://apify.com/vulnv/facebook-profile-scraper) | Scrape public Facebook profile information and post data |
+| [TikTok Scraper](https://apify.com/vulnv/tiktok-scraper) | Extract video data, engagement metrics, and creator info from TikTok |
+| [LinkedIn Profile Scraper](https://apify.com/vulnv/linkedin-profile-scraper) | Scrape public LinkedIn profile data without login |
+| [LinkedIn Posts Scraper](https://apify.com/vulnv/linkedin-posts-scraper) | Extract LinkedIn post content, engagement metrics, and comments |
+| [Reddit Posts Scraper](https://apify.com/vulnv/reddit-posts-scraper) | Collect Reddit posts and comments from any subreddit |
+
+🔍 Explore the full collection at 🌐 [Vulnv's Apify Actors](https://apify.com/vulnv)
+
+📧 For support or collaborations, reach out at [apify@vulnv.com](mailto:apify@vulnv.com).
